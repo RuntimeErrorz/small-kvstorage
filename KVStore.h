@@ -65,8 +65,15 @@ public:
             std::lock_guard<std::mutex> mlock(metaMutex);
             std::lock_guard<std::mutex> dflock(fileMutex);
             dataFile.seekg(0, std::ios::end);
-            metadataMap[key] = { currentOffset, sizeof(value) };
-            currentOffset += sizeof(value);
+            size_t valueSize;
+            if constexpr (std::is_same_v<V, std::string>) {
+                valueSize = value.size();
+            }
+            else {
+                valueSize = sizeof(value);
+            }
+            metadataMap[key] = { currentOffset, valueSize };
+            currentOffset += valueSize;
         }
         if (buffer.size() >= bufferCapacity) {
             std::unique_lock<std::mutex> lock(queueMutex);
@@ -86,7 +93,6 @@ public:
             dataFile.read(temp.data(), meta.size);
             return Serializer::deserialize<V>(temp);
         }
-        return -1;
     }
     bool del(int key) {
         std::lock_guard<std::mutex> lock(metaMutex);
