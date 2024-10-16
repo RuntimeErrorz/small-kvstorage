@@ -60,13 +60,21 @@ public:
     }
     void put(int key, const V& value) {
         std::lock_guard<std::mutex> lock(bufferMutex);
-        Serializer::serialize(buffer, value);
+        if constexpr (std::is_class<V>::value && !std::is_same_v<V, std::string>) {
+            value.serialize(buffer);
+        }
+        else {
+            Serializer::serialize(buffer, value);
+        }
         {
             std::lock_guard<std::mutex> mlock(metaMutex);
             std::lock_guard<std::mutex> dflock(fileMutex);
             dataFile.seekg(0, std::ios::end);
             size_t valueSize;
-            if constexpr (std::is_same_v<V, std::string>) {
+            if constexpr (std::is_class<V>::value && !std::is_same_v<V, std::string>) {
+                valueSize = value.logicalSize();
+            }
+            else if constexpr (std::is_same_v<V, std::string>) {
                 valueSize = value.size();
             }
             else {
@@ -91,8 +99,12 @@ public:
             dataFile.seekg(meta.offset, std::ios::beg);
             std::vector<char> temp(meta.size);
             dataFile.read(temp.data(), meta.size);
+            if constexpr (std::is_class<V>::value && !std::is_same_v<V, std::string>) {
+                return V::deserialize(temp);
+            }
             return Serializer::deserialize<V>(temp);
         }
+        throw std::out_of_range("Key not found in metadataMap");
     }
     bool del(int key) {
         std::lock_guard<std::mutex> lock(metaMutex);
