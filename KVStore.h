@@ -1,7 +1,7 @@
 #ifndef KVSTORE_H
 #define KVSTORE_H
 
-#include "Serializer.h"
+#include "serializer.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -49,7 +49,8 @@ public:
                 thread.join();
             }
         }
-        flushBuffer();
+        if (buffer.size())
+            flushBuffer();
         if (dataFile.is_open()) {
             dataFile.close();
         }
@@ -178,7 +179,7 @@ private:
 
         size_t mapSize;
         if (!metaFile.read(reinterpret_cast<char*>(&mapSize), sizeof(mapSize))) {
-            return; // 文件为空或读取失败
+            return;
         }
         size_t metadataSize = sizeof(mapSize);
         for (size_t i = 0; i < mapSize; ++i) {
@@ -187,7 +188,7 @@ private:
             if (!metaFile.read(reinterpret_cast<char*>(&key), sizeof(key)) ||
                 !metaFile.read(reinterpret_cast<char*>(&meta.offset), sizeof(meta.offset)) ||
                 !metaFile.read(reinterpret_cast<char*>(&meta.size), sizeof(meta.size))) {
-                break; // 读取失败，可能是文件损坏
+                break; 
             }
             metadataSize += sizeof(key) + sizeof(meta.offset) + sizeof(meta.size);
             metadataMap[key] = meta;
