@@ -1,6 +1,5 @@
 #include "kvstore.h"
 #include "test_utils.h"
-#include "struct.h"
 #include <iostream>
 #include <vector>
 #include <thread>

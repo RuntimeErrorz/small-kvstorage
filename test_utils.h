@@ -71,7 +71,7 @@ void KVStorePutGet(const std::string& dataFilename, const std::string& metaFilen
         }
     }
 
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 10; ++i) {
         try {
             std::cout << "Key: " << i << ", Value: " << store.get(i) << std::endl;
         }
