@@ -26,7 +26,7 @@ main:
 	$(CXX) $(CXXFLAGS) -o $@ $(SRCS_MAIN) -L. -lkvstore 
 
 stress:
-	$(CXX) $(CXXFLAGS) -o $@ $(SRCS_STRESS) -L. -lkvstore 
+	$(CXX) $(CXXFLAGS) -pg -o $@ $(SRCS_STRESS) -L. -lkvstore 
 
 # 清理生成的文件
 clean:

@@ -46,7 +46,7 @@ void KVStore<V>::put(int key, const V& value) {
         value.serialize(buffer);
     else
         Serializer::serialize(buffer, value);
-    
+
     size_t valueSize;
     if constexpr (std::is_class<V>::value && !std::is_same_v<V, std::string>)
         valueSize = value.logicalSize();
@@ -75,17 +75,20 @@ V KVStore<V>::get(int key) {
         dataFile.seekg(meta.offset, std::ios::beg);
         std::vector<char> temp(meta.size);
         dataFile.read(temp.data(), meta.size);
-        if constexpr (std::is_class<V>::value && !std::is_same_v<V, std::string>) 
+        if constexpr (std::is_class<V>::value && !std::is_same_v<V, std::string>)
             return V::deserialize(temp);
         return Serializer::deserialize<V>(temp);
     }
-    throw std::out_of_range("Key not found in metadataMap");
+    throw std::out_of_range("Key " + std::to_string(key) + " not found while getting");
 }
 
 template<typename V>
-bool KVStore<V>::del(int key) {
-    metadataMap.erase(key);
-    return true;
+void KVStore<V>::del(int key) {
+    auto it = metadataMap.find(key);
+    if (it != metadataMap.end()) 
+        metadataMap.erase(it);
+    else 
+        throw std::out_of_range("Key " + std::to_string(key) + " not found while deleting");
 }
 
 template<typename V>

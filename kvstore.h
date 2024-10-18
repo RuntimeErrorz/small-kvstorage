@@ -19,7 +19,7 @@ public:
     ~KVStore();
     void put(int key, const V& value);
     V get(int key);
-    bool del(int key);
+    void del(int key);
     void flushBuffer();
 
 private:
