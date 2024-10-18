@@ -1,6 +1,6 @@
 # 定义编译器和编译选项
 CXX = g++
-CXXFLAGS = -std=c++17 -fPIC -pthread
+CXXFLAGS = -std=c++17 -fPIC -pthread -O2
 
 # 定义目标文件
 TARGET_LIB = libkvstore.so

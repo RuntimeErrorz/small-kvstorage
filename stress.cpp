@@ -19,7 +19,7 @@ int main() {
     int i = 1;
     while (1) {
         auto roundStart = std::chrono::high_resolution_clock::now();
-        KVStorePutGet<Person>("struct.bin", "struct.meta", numThreads, numInsertsPerThread, bufferSize);
+        KVStorePutGet<Person>(true, "struct.bin", "struct.meta", numThreads, numInsertsPerThread, bufferSize);
         auto roundEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> roundDuration = roundEnd - roundStart;
         std::chrono::duration<double> duration = roundEnd - start;

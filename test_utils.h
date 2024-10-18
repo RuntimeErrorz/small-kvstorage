@@ -18,32 +18,27 @@ inline std::string randomString(size_t length) {
     std::uniform_int_distribution<> dist(0, chars.size() - 1);
 
     std::string result;
-    for (size_t i = 0; i < length; ++i) {
+    for (size_t i = 0; i < length; ++i)
         result += chars[dist(gen)];
-    }
     return result;
 }
 
 template<typename V>
-void insertRandomKeys(KVStore<V>& store, std::mutex& storeMutex, int threadId, int numInsertsPerThread) {
+void insertRandomKeys(bool isStress, KVStore<V>& store, std::mutex& storeMutex, int threadId, int numInsertsPerThread) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> intDist(0, 100);
     std::uniform_real_distribution<> doubleDist(0.0, 100.0);
-    
+
     for (int i = 0; i < numInsertsPerThread; ++i) {
         int key = threadId * numInsertsPerThread + i;
         V value;
-        
-        if constexpr (std::is_same<V, int>::value) {
+        if constexpr (std::is_same<V, int>::value)
             value = intDist(gen);
-        }
-        else if constexpr (std::is_same<V, double>::value) {
+        else if constexpr (std::is_same<V, double>::value)
             value = doubleDist(gen);
-        }
-        else if constexpr (std::is_same<V, std::string>::value) {
+        else if constexpr (std::is_same<V, std::string>::value)
             value = randomString(8);
-        }
         else if constexpr (std::is_same<V, Person>::value) {
             value.age = intDist(gen);
             value.height = doubleDist(gen);
@@ -51,25 +46,24 @@ void insertRandomKeys(KVStore<V>& store, std::mutex& storeMutex, int threadId, i
         }
         {
             std::lock_guard<std::mutex> lock(storeMutex);
+            if (!isStress)
+                std::cout << "Inserting key: " << key << ", Value: " << value << std::endl;
             store.put(key, value);
         }
     }
 }
 
 template<typename V>
-void KVStorePutGet(const std::string& dataFilename, const std::string& metaFilename, int numThreads, int numInsertsPerThread, int bufferSize) {
+void KVStorePutGet(bool isStress, const std::string& dataFilename, const std::string& metaFilename, int numThreads, int numInsertsPerThread, int bufferSize) {
     KVStore<V> store(dataFilename, metaFilename, bufferSize);
     std::mutex storeMutex;
     std::vector<std::thread> threads;
-    
-    for (int i = 0; i < numThreads; ++i) {
-        threads.emplace_back(insertRandomKeys<V>, std::ref(store), std::ref(storeMutex), i, numInsertsPerThread);
-    }
-    for (auto& thread : threads) {
-        if (thread.joinable()) {
+
+    for (int i = 0; i < numThreads; ++i)
+        threads.emplace_back(insertRandomKeys<V>, isStress, std::ref(store), std::ref(storeMutex), i, numInsertsPerThread);
+    for (auto& thread : threads)
+        if (thread.joinable())
             thread.join();
-        }
-    }
 
     for (int i = 0; i < 10; ++i) {
         try {
