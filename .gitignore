@@ -5,3 +5,4 @@ main
 stress
 *.so
 *.out
+*.txt

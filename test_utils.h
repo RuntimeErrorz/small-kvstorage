@@ -24,7 +24,7 @@ inline std::string randomString(size_t length, std::mt19937& gen) {
 
 template<typename V>
 void insertRandomKeys(KVStore<V>& store, std::mutex& storeMutex, int threadId, int numInsertsPerThread, std::mt19937& gen, bool isStress) {
-    std::uniform_int_distribution<> intDist(0, 100);
+    std::uniform_int_distribution<> intDist(0, 10);
     std::uniform_real_distribution<> doubleDist(0.0, 100.0);
 
     for (int i = 0; i < numInsertsPerThread; ++i) {
@@ -35,11 +35,11 @@ void insertRandomKeys(KVStore<V>& store, std::mutex& storeMutex, int threadId, i
         else if constexpr (std::is_same<V, double>::value)
             value = doubleDist(gen);
         else if constexpr (std::is_same<V, std::string>::value)
-            value = randomString(8, gen);
+            value = randomString(intDist(gen), gen);
         else if constexpr (std::is_same<V, Person>::value) {
             value.age = intDist(gen);
             value.height = doubleDist(gen);
-            value.name = randomString(8, gen);
+            value.name = randomString(intDist(gen), gen);
         }
         {
             std::lock_guard<std::mutex> lock(storeMutex);
@@ -51,7 +51,7 @@ void insertRandomKeys(KVStore<V>& store, std::mutex& storeMutex, int threadId, i
 }
 
 template<typename V>
-void KVStorePutGetDel(bool isStress, const std::string& dataFilename, const std::string& metaFilename, int numThreads, int numInsertsPerThread, int bufferSize) {
+void KVStorePutDelGet(bool isStress, const std::string& dataFilename, const std::string& metaFilename, int numThreads, int numInsertsPerThread, int bufferSize) {
     KVStore<V> store(dataFilename, metaFilename, bufferSize);
     std::mutex storeMutex;
 

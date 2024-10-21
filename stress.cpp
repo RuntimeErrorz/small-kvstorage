@@ -19,14 +19,14 @@ int main() {
     int i = 1;
     while (1) {
         auto roundStart = std::chrono::high_resolution_clock::now();
-        KVStorePutGetDel<Person>(true, "struct.bin", "struct.meta", numThreads, numInsertsPerThread, bufferSize);
+        KVStorePutDelGet<Person>(true, "struct.bin", "struct.meta", numThreads, numInsertsPerThread, bufferSize);
         auto roundEnd = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> roundDuration = roundEnd - roundStart;
         std::chrono::duration<double> duration = roundEnd - start;
         std::cout << "------------ Round" << i++ << ": " << roundDuration.count() << " seconds | Total: " << duration.count() << " seconds ------------" << std::endl;
         std::filesystem::remove("struct.bin");
         std::filesystem::remove("struct.meta");
-        if (duration.count() > 12 * 60 * 60)
+        if (duration.count() > 60)
             break;
     }
     // Person: int 4 bytes, double 8 bytes, string size = 52 bytes;
