@@ -24,7 +24,7 @@ inline std::string randomString(size_t length, std::mt19937& gen) {
 
 template<typename V>
 void insertRandomKeys(KVStore<V>& store, std::mutex& storeMutex, int threadId, int numInsertsPerThread, std::mt19937& gen, bool isStress) {
-    std::uniform_int_distribution<> intDist(0, 10);
+    std::uniform_int_distribution<> intDist(1, 11);
     std::uniform_real_distribution<> doubleDist(0.0, 100.0);
 
     for (int i = 0; i < numInsertsPerThread; ++i) {
@@ -37,9 +37,16 @@ void insertRandomKeys(KVStore<V>& store, std::mutex& storeMutex, int threadId, i
         else if constexpr (std::is_same<V, std::string>::value)
             value = randomString(intDist(gen), gen);
         else if constexpr (std::is_same<V, Person>::value) {
-            value.age = intDist(gen);
-            value.height = doubleDist(gen);
-            value.name = randomString(intDist(gen), gen);
+            if (isStress) {
+                value.age = 18;
+                value.height = 180.0;
+                value.name = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            }
+            else {
+                value.age = intDist(gen);
+                value.height = doubleDist(gen);
+                value.name = randomString(intDist(gen), gen);
+            }
         }
         {
             std::lock_guard<std::mutex> lock(storeMutex);
@@ -66,30 +73,34 @@ void KVStorePutDelGet(bool isStress, const std::string& dataFilename, const std:
     for (int i = 5; i <= 10; ++i) {
         try {
             store.del(i);
-            std::cout << "Deleting key: " << i << std::endl;
+            if (!isStress)
+                std::cout << "Deleting key: " << i << std::endl;
         }
         catch (const std::out_of_range& e) {
-            std::cout << "Error: " << e.what() << std::endl;
+            if (!isStress)
+                std::cout << "Error: " << e.what() << std::endl;
         }
     }
-    KVStoreGetImpl(store);
+    KVStoreGetImpl(isStress, store);
 }
 
 template<typename V>
-void KVStoreGet(const std::string& dataFilename, const std::string& metaFilename) {
+void KVStoreGet(bool isStress, const std::string& dataFilename, const std::string& metaFilename) {
     KVStore<V> store(dataFilename, metaFilename, 16);
-    KVStoreGetImpl(store);
+    KVStoreGetImpl(isStress, store);
 }
 
 template<typename V>
-void KVStoreGetImpl(KVStore<V>& store) {
+void KVStoreGetImpl(bool isStress, KVStore<V>& store) {
     for (int i = 0; i < 10; ++i) {
         try {
             V value = store.get(i);
-            std::cout << "Key: " << i << ", Value: " << value << std::endl;
+            if (!isStress)
+                std::cout << "Key: " << i << ", Value: " << value << std::endl;
         }
         catch (const std::out_of_range& e) {
-            std::cout << "Error: " << e.what() << std::endl;
+            if (!isStress)
+                std::cout << "Error: " << e.what() << std::endl;
         }
     }
 }

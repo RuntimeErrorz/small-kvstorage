@@ -16,7 +16,7 @@ SRCS_STRESS = stress.cpp
 INCLUDES = -I.
 
 # 默认目标
-all: $(TARGET_LIB) $(TARGET_EXEC) $(STATIC_EXEC)
+all: $(TARGET_LIB) $(TARGET_EXEC)
 
 # 编译共享库
 $(TARGET_LIB):
@@ -27,14 +27,15 @@ main:
 	$(CXX) $(CXXFLAGS) -o $@ $(SRCS_MAIN) -L. -lkvstore
 
 stress:
-	$(CXX) $(CXXFLAGS) -pg -o $@ $(SRCS_STRESS) -L. -lkvstore
+	$(CXX) $(CXXFLAGS) -g -o $@ $(SRCS_STRESS) -L. -lkvstore
 
 # 静态编译可执行文件
 main_static:
 	$(CXX) -std=c++17 -pthread -O2 -o $@ $(SRCS_MAIN) $(SRCS_LIB)
 
 stress_static:
-	$(CXX) -std=c++17 -pthread -O2 -pg -o $@ $(SRCS_STRESS) $(SRCS_LIB)
+	$(CXX) -std=c++17 -pthread -o $@ $(SRCS_STRESS) $(SRCS_LIB)
+
 
 # 清理生成的文件
 clean:

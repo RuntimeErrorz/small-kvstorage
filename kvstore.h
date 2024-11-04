@@ -25,14 +25,14 @@ public:
 private:
     struct Metadata {
         size_t offset;
-        size_t size;
+        short size;
     };
 
     std::fstream dataFile;
     std::fstream metaFile;
 
     size_t currentOffset;
-    size_t bufferCapacity;
+    int bufferCapacity;
 
     std::vector<char> buffer;
     std::queue<std::vector<char>> taskQueue;

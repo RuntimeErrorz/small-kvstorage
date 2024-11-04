@@ -1,0 +1,1 @@
+rm -f perf.* *.log *.bin *.meta *.out

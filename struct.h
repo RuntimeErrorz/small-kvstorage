@@ -30,7 +30,7 @@ struct Person {
         return os;
     }
 
-    size_t logicalSize() const {
+    short logicalSize() const {
         return name.size() + sizeof(age) + sizeof(height);
     }
 };

@@ -6,3 +6,4 @@ stress
 *.so
 *.out
 *.txt
+*.data
